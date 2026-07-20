@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>My Study App</title>
-    <!-- إعدادات الشاشة الكاملة لتطبيق الويب الأصلي -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="My Study App">
@@ -13,45 +12,35 @@
         * { box-sizing: border-box; touch-action: manipulation; }
         body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; }
         
-        /* المساحة الرئيسية لتوزيع الملفات واللوحة */
-        .workspace { display: flex; width: 100vw; height: calc(100vh - 65px); position: relative; }
+        .workspace { display: flex; width: 100vw; height: calc(100vh - 55px); position: relative; }
 
-        /* أقسام الملفات واللوحة */
         .panel { display: flex; flex-direction: column; background: #1e293b; overflow: hidden; position: relative; }
         .panel-header { padding: 8px 12px; background: #0f172a; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
         
-        /* الفاصل لتغيير حجم الملفات بسهولة */
-        .resizer { width: 6px; background: #334155; cursor: col-resize; transition: background 0.2s; }
+        .resizer { width: 8px; background: #334155; cursor: col-resize; transition: background 0.2s; }
         .resizer:hover, .resizer:active { background: #38bdf8; }
 
         iframe.viewer { width: 100%; height: 100%; border: none; background: #fff; }
 
-        /* لوحة الرسم بقلم أبل (Scratchpad) */
-        canvas#canvasBoard { width: 100%; height: 100%; background: #0f172a; touch-action: none; cursor: crosshair; }
-
-        /* نافذة يوتيوب العائمة والمتحركة مع إمكانية التكبير والتصغير */
+        /* نافذة يوتيوب العائمة والمتحركة */
         #ytWindow { position: absolute; z-index: 9999; top: 20px; right: 20px; width: 380px; height: 240px; background: #1e293b; border: 2px solid #38bdf8; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; resize: both; overflow: hidden; min-width: 220px; min-height: 150px; }
         #ytHeader { padding: 6px 12px; background: #0f172a; cursor: move; font-size: 0.8rem; color: #38bdf8; font-weight: bold; display: flex; justify-content: space-between; user-select: none; }
         #ytIframe { width: 100%; flex: 1; border: none; }
 
-        /* الشريط السفلي الاحترافي للملاحظات والأدوات */
-        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100vw; height: 65px; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 10000; }
-        .tool-group { display: flex; align-items: center; gap: 8px; }
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100vw; height: 55px; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 10000; }
         
-        .tool-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-        .tool-btn.active, .tool-btn:active { background: #0284c7; border-color: #38bdf8; }
-        
-        .color-picker { width: 30px; height: 30px; border: none; border-radius: 50%; cursor: pointer; background: transparent; }
+        .tool-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
+        .tool-btn:active { background: #0284c7; }
     </style>
 </head>
 <body>
 
     <div class="workspace" id="workspace">
         
-        <!-- القسم الأول: الكتاب أو الملزمة الأولى -->
+        <!-- الكتاب / الملف الأول -->
         <div class="panel" id="panel1" style="flex: 1;">
             <div class="panel-header">
-                <span>📄 الكتاب الأساسي</span>
+                <span>📖 الكتاب الأول</span>
                 <input type="file" accept="application/pdf" onchange="loadPdf(event, 'frame1')" style="font-size:0.75rem; color:#94a3b8;">
             </div>
             <iframe id="frame1" class="viewer" src="about:blank"></iframe>
@@ -59,62 +48,37 @@
 
         <div class="resizer" id="resizer1"></div>
 
-        <!-- القسم الثاني: الملزمة الثانية أو نفس الملف للمقارنة -->
+        <!-- الملزمة / الملف الثاني -->
         <div class="panel" id="panel2" style="flex: 1;">
             <div class="panel-header">
-                <span>📄 الملزمة / المقارنة</span>
+                <span>📑 الملزمة / الكتاب الثاني</span>
                 <input type="file" accept="application/pdf" onchange="loadPdf(event, 'frame2')" style="font-size:0.75rem; color:#94a3b8;">
             </div>
             <iframe id="frame2" class="viewer" src="about:blank"></iframe>
         </div>
 
-        <div class="resizer" id="resizer2"></div>
-
-        <!-- القسم الثالث: مساحة خطوات الحل وتدوين الملاحظات بقلم أبل -->
-        <div class="panel" id="panel3" style="flex: 1;">
-            <div class="panel-header">
-                <span>✏️ مسودة الحل بالقلم</span>
-            </div>
-            <canvas id="canvasBoard"></canvas>
-        </div>
-
     </div>
 
-    <!-- نافذة يوتيوب العائمة القابلة للتكبير والتحريك -->
+    <!-- نافذة يوتيوب العائمة -->
     <div id="ytWindow">
         <div id="ytHeader">
             <span>📺 يوتيوب عائم (اسحب وتكّبر)</span>
             <small style="color:#94a3b8;">📐 اسحب الزاوية للتكبير</small>
         </div>
         <div style="padding: 4px; display: flex; gap: 4px; background: #1e293b;">
-            <input type="text" id="ytUrl" placeholder="ضع رابط الفيديو..." style="flex: 1; background: #0f172a; color: #fff; border: 1px solid #475569; border-radius: 4px; font-size: 0.75rem; padding: 3px 6px;">
-            <button onclick="playYoutube()" style="background: #0284c7; color: #fff; border: none; border-radius: 4px; font-size: 0.75rem; padding: 3px 8px; font-weight:bold;">تشغيل</button>
+            <input type="text" id="ytUrl" placeholder="ضع رابط الفيديو..." style="flex: 1; background: #0f172a; color: #fff; border: 1px solid #475569; border-radius: 4px; font-size: 0.75rem; padding: 4px 6px;">
+            <button onclick="playYoutube()" style="background: #0284c7; color: #fff; border: none; border-radius: 4px; font-size: 0.75rem; padding: 4px 10px; font-weight:bold;">تشغيل</button>
         </div>
         <iframe id="ytIframe" src="https://www.youtube.com/embed/" allowfullscreen></iframe>
     </div>
 
-    <!-- الشريط السفلي الشامل للأدوات والقلم -->
+    <!-- الشريط السفلي -->
     <div class="bottom-bar">
-        
-        <!-- أدوات الرسم والملاحظات -->
-        <div class="tool-group">
-            <button class="tool-btn active" id="penBtn" onclick="setTool('pen')">✏️ القلم</button>
-            <button class="tool-btn" id="highlighterBtn" onclick="setTool('highlighter')">🖍️ هايلايتر</button>
-            <button class="tool-btn" id="laserBtn" onclick="setTool('laser')">🔦 الليزر</button>
-            <button class="tool-btn" id="eraserBtn" onclick="setTool('eraser')">🧹 مساحة</button>
-            <input type="color" id="colorPicker" class="color-picker" value="#38bdf8" onchange="updateColor(this.value)">
-        </div>
-
-        <!-- أدوات التحكم والتقسيم -->
-        <div class="tool-group">
-            <button class="tool-btn" onclick="toggleSplit()">↔️ تقسيم / إخفاء الشاشة</button>
-            <button class="tool-btn" style="background:#ef4444;" onclick="clearCanvas()">🗑️ مسح الكل</button>
-        </div>
-
+        <button class="tool-btn" onclick="toggleSplit()">↔️ إخفاء / عرض الشاشة الثانية</button>
+        <span style="font-size: 0.85rem; color: #38bdf8; font-weight: bold;">⚡ My Study App</span>
     </div>
 
     <script>
-        // 1. فتح ملفات الـ PDF
         function loadPdf(e, frameId) {
             const file = e.target.files[0];
             if (file) {
@@ -122,7 +86,6 @@
             }
         }
 
-        // 2. إلغاء / تفعيل تقسيم الشاشة الداخلي
         function toggleSplit() {
             const p2 = document.getElementById('panel2');
             const r1 = document.getElementById('resizer1');
@@ -135,72 +98,7 @@
             }
         }
 
-        // 3. دعم القلم والهايلايتر والليزر والمساحة
-        const canvas = document.getElementById('canvasBoard');
-        const ctx = canvas.getContext('2d');
-        let drawing = false;
-        let currentTool = 'pen';
-        let currentColor = '#38bdf8';
-
-        function resizeCanvas() {
-            canvas.width = canvas.parentElement.clientWidth;
-            canvas.height = canvas.parentElement.clientHeight;
-        }
-        window.addEventListener('resize', resizeCanvas);
-        setTimeout(resizeCanvas, 500);
-
-        function setTool(tool) {
-            currentTool = tool;
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            if(tool === 'pen') document.getElementById('penBtn').classList.add('active');
-            if(tool === 'highlighter') document.getElementById('highlighterBtn').classList.add('active');
-            if(tool === 'laser') document.getElementById('laserBtn').classList.add('active');
-            if(tool === 'eraser') document.getElementById('eraserBtn').classList.add('active');
-        }
-
-        function updateColor(val) { currentColor = val; }
-
-        canvas.addEventListener('pointerdown', (e) => {
-            drawing = true;
-            ctx.beginPath();
-            ctx.moveTo(e.offsetX, e.offsetY);
-        });
-
-        canvas.addEventListener('pointermove', (e) => {
-            if (!drawing) return;
-
-            if (currentTool === 'pen') {
-                ctx.globalAlpha = 1.0;
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 3;
-                ctx.lineTo(e.offsetX, e.offsetY);
-                ctx.stroke();
-            } else if (currentTool === 'highlighter') {
-                ctx.globalAlpha = 0.3; // درجة الشفافية للهايلايتر
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 18;
-                ctx.lineTo(e.offsetX, e.offsetY);
-                ctx.stroke();
-            } else if (currentTool === 'laser') {
-                ctx.clearRect(0, 0, canvas.width, canvas.height); // مسح نقطة الليزر القديمة
-                ctx.globalAlpha = 1.0;
-                ctx.fillStyle = '#ef4444';
-                ctx.beginPath();
-                ctx.arc(e.offsetX, e.offsetY, 8, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (currentTool === 'eraser') {
-                ctx.clearRect(e.offsetX - 15, e.offsetY - 15, 30, 30);
-            }
-        });
-
-        canvas.addEventListener('pointerup', () => {
-            drawing = false;
-            if (currentTool === 'laser') ctx.clearRect(0, 0, canvas.width, canvas.height);
-        });
-
-        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
-
-        // 4. تحريك وتكبير نافذة يوتيوب العائمة
+        // تحريك نافذة يوتيوب
         const ytWin = document.getElementById('ytWindow');
         const ytHead = document.getElementById('ytHeader');
         let active = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
