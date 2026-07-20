@@ -2,129 +2,103 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>My Study App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>My Study App Pro</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="My Study App">
+    <meta name="apple-mobile-web-app-title" content="StudyPro">
 
     <style>
-        * { box-sizing: border-box; touch-action: manipulation; }
-        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: #0f172a; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #fff; }
+        * { box-sizing: border-box; touch-action: none; }
+        body, html { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: #0f172a; font-family: -apple-system, sans-serif; color: #fff; }
         
-        .workspace { display: flex; width: 100vw; height: calc(100vh - 55px); position: relative; }
+        .workspace { display: flex; flex-direction: column; width: 100vw; height: calc(100vh - 60px); }
+        .panel { display: flex; flex-direction: column; background: #1e293b; overflow: hidden; flex: 1; border-bottom: 1px solid #334155; }
+        .panel-header { padding: 4px 12px; background: #0f172a; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; height: 35px; }
+        .viewer-container { flex: 1; position: relative; width: 100%; }
+        iframe.viewer { width: 100%; height: 100%; border: none; background: #fff; pointer-events: auto; }
+        canvas.draw-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; touch-action: none; }
 
-        .panel { display: flex; flex-direction: column; background: #1e293b; overflow: hidden; position: relative; }
-        .panel-header { padding: 8px 12px; background: #0f172a; font-size: 0.85rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
-        
-        .resizer { width: 8px; background: #334155; cursor: col-resize; transition: background 0.2s; }
-        .resizer:hover, .resizer:active { background: #38bdf8; }
-
-        iframe.viewer { width: 100%; height: 100%; border: none; background: #fff; }
-
-        /* نافذة يوتيوب العائمة والمتحركة */
-        #ytWindow { position: absolute; z-index: 9999; top: 20px; right: 20px; width: 380px; height: 240px; background: #1e293b; border: 2px solid #38bdf8; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.6); display: flex; flex-direction: column; resize: both; overflow: hidden; min-width: 220px; min-height: 150px; }
-        #ytHeader { padding: 6px 12px; background: #0f172a; cursor: move; font-size: 0.8rem; color: #38bdf8; font-weight: bold; display: flex; justify-content: space-between; user-select: none; }
+        #ytWindow { position: absolute; z-index: 9999; top: 60px; left: 20px; width: 360px; height: 220px; background: #1e293b; border: 2px solid #38bdf8; border-radius: 12px; display: flex; flex-direction: column; resize: both; overflow: hidden; }
+        #ytHeader { padding: 6px 12px; background: #0f172a; cursor: move; font-size: 0.8rem; color: #38bdf8; display: flex; justify-content: space-between; }
         #ytIframe { width: 100%; flex: 1; border: none; }
 
-        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100vw; height: 55px; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 10000; }
-        
-        .tool-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 8px 15px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; }
-        .tool-btn:active { background: #0284c7; }
+        .bottom-bar { position: fixed; bottom: 0; left: 0; width: 100vw; height: 60px; background: #1e293b; border-top: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; z-index: 20000; }
+        .tool-btn { background: #334155; color: #fff; border: 1px solid #475569; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; }
+        .tool-btn.active { background: #0284c7; }
     </style>
 </head>
 <body>
 
-    <div class="workspace" id="workspace">
-        
-        <!-- الكتاب / الملف الأول -->
-        <div class="panel" id="panel1" style="flex: 1;">
-            <div class="panel-header">
-                <span>📖 الكتاب الأول</span>
-                <input type="file" accept="application/pdf" onchange="loadPdf(event, 'frame1')" style="font-size:0.75rem; color:#94a3b8;">
-            </div>
-            <iframe id="frame1" class="viewer" src="about:blank"></iframe>
+    <div class="workspace">
+        <div class="panel" id="panel1">
+            <div class="panel-header"><span>📖 الملف العلوي</span><input type="file" accept="application/pdf" onchange="loadPdf(event, 'frame1')"></div>
+            <div class="viewer-container"><iframe id="frame1" class="viewer"></iframe><canvas id="canvas1" class="draw-layer"></canvas></div>
         </div>
-
-        <div class="resizer" id="resizer1"></div>
-
-        <!-- الملزمة / الملف الثاني -->
-        <div class="panel" id="panel2" style="flex: 1;">
-            <div class="panel-header">
-                <span>📑 الملزمة / الكتاب الثاني</span>
-                <input type="file" accept="application/pdf" onchange="loadPdf(event, 'frame2')" style="font-size:0.75rem; color:#94a3b8;">
-            </div>
-            <iframe id="frame2" class="viewer" src="about:blank"></iframe>
+        <div class="panel" id="panel2">
+            <div class="panel-header"><span>📑 الملف السفلي</span><input type="file" accept="application/pdf" onchange="loadPdf(event, 'frame2')"></div>
+            <div class="viewer-container"><iframe id="frame2" class="viewer"></iframe><canvas id="canvas2" class="draw-layer"></canvas></div>
         </div>
-
     </div>
 
-    <!-- نافذة يوتيوب العائمة -->
     <div id="ytWindow">
-        <div id="ytHeader">
-            <span>📺 يوتيوب عائم (اسحب وتكّبر)</span>
-            <small style="color:#94a3b8;">📐 اسحب الزاوية للتكبير</small>
+        <div id="ytHeader"><span>📺 يوتيوب</span></div>
+        <div style="padding: 4px; display:flex; gap:4px;">
+            <input type="text" id="ytUrl" style="flex:1; background:#0f172a; color:#fff; border:none;" placeholder="رابط الفيديو...">
+            <button onclick="playYoutube()" style="background:#0284c7; border:none; color:white;">تشغيل</button>
         </div>
-        <div style="padding: 4px; display: flex; gap: 4px; background: #1e293b;">
-            <input type="text" id="ytUrl" placeholder="ضع رابط الفيديو..." style="flex: 1; background: #0f172a; color: #fff; border: 1px solid #475569; border-radius: 4px; font-size: 0.75rem; padding: 4px 6px;">
-            <button onclick="playYoutube()" style="background: #0284c7; color: #fff; border: none; border-radius: 4px; font-size: 0.75rem; padding: 4px 10px; font-weight:bold;">تشغيل</button>
-        </div>
-        <iframe id="ytIframe" src="https://www.youtube.com/embed/" allowfullscreen></iframe>
+        <iframe id="ytIframe"></iframe>
     </div>
 
-    <!-- الشريط السفلي -->
     <div class="bottom-bar">
-        <button class="tool-btn" onclick="toggleSplit()">↔️ إخفاء / عرض الشاشة الثانية</button>
-        <span style="font-size: 0.85rem; color: #38bdf8; font-weight: bold;">⚡ My Study App</span>
+        <button class="tool-btn" onclick="setMode('pen')">✏️ قلم</button>
+        <button class="tool-btn" onclick="setMode('highlighter')">🖍️ هايلايتر</button>
+        <button class="tool-btn" onclick="clearAll()">🗑️ مسح</button>
+        <span style="color:#38bdf8;">إصبعان للمسح / إصبع للتقليب</span>
     </div>
 
     <script>
-        function loadPdf(e, frameId) {
-            const file = e.target.files[0];
-            if (file) {
-                document.getElementById(frameId).src = URL.createObjectURL(file);
-            }
+        function loadPdf(e, id) { document.getElementById(id).src = URL.createObjectURL(e.target.files[0]); }
+        let mode = 'pen', color = '#ff3b30';
+        function setMode(m) { mode = m; }
+        
+        function setupCanvas(canvas, ctx) {
+            let drawing = false;
+            canvas.addEventListener('pointerdown', (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+            canvas.addEventListener('pointermove', (e) => {
+                if (e.pointerType === 'touch' && e.getCoalescedEvents().length > 1) {
+                    ctx.clearRect(e.offsetX - 25, e.offsetY - 25, 50, 50);
+                    return;
+                }
+                if (drawing) {
+                    ctx.lineWidth = (mode === 'highlighter') ? 20 : 3;
+                    ctx.globalAlpha = (mode === 'highlighter') ? 0.3 : 1.0;
+                    ctx.strokeStyle = color;
+                    ctx.lineTo(e.offsetX, e.offsetY);
+                    ctx.stroke();
+                }
+            });
+            canvas.addEventListener('pointerup', () => drawing = false);
+        }
+        setupCanvas(document.getElementById('canvas1'), document.getElementById('canvas1').getContext('2d'));
+        setupCanvas(document.getElementById('canvas2'), document.getElementById('canvas2').getContext('2d'));
+        
+        function clearAll() { 
+            [document.getElementById('canvas1'), document.getElementById('canvas2')].forEach(c => c.getContext('2d').clearRect(0,0,c.width,c.height));
         }
 
-        function toggleSplit() {
-            const p2 = document.getElementById('panel2');
-            const r1 = document.getElementById('resizer1');
-            if (p2.style.display === 'none') {
-                p2.style.display = 'flex';
-                r1.style.display = 'block';
-            } else {
-                p2.style.display = 'none';
-                r1.style.display = 'none';
-            }
-        }
-
-        // تحريك نافذة يوتيوب
-        const ytWin = document.getElementById('ytWindow');
-        const ytHead = document.getElementById('ytHeader');
-        let active = false, currentX, currentY, initialX, initialY, xOffset = 0, yOffset = 0;
-
-        ytHead.addEventListener('pointerdown', (e) => {
-            initialX = e.clientX - xOffset;
-            initialY = e.clientY - yOffset;
-            active = true;
-        });
-        document.addEventListener('pointermove', (e) => {
-            if (active) {
-                currentX = e.clientX - initialX;
-                currentY = e.clientY - initialY;
-                xOffset = currentX; yOffset = currentY;
-                ytWin.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-            }
-        });
-        document.addEventListener('pointerup', () => active = false);
+        // تحريك النافذة
+        const yt = document.getElementById('ytWindow');
+        yt.querySelector('#ytHeader').onpointerdown = (e) => {
+            let s = {x: e.clientX - yt.offsetLeft, y: e.clientY - yt.offsetTop};
+            document.onpointermove = (ev) => { yt.style.left = (ev.clientX - s.x) + 'px'; yt.style.top = (ev.clientY - s.y) + 'px'; };
+            document.onpointerup = () => { document.onpointermove = null; };
+        };
 
         function playYoutube() {
-            const url = document.getElementById('ytUrl').value;
-            const reg = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-            const m = url.match(reg);
-            if (m && m[2].length == 11) {
-                document.getElementById('ytIframe').src = "https://www.youtube.com/embed/" + m[2];
-            }
+            let u = document.getElementById('ytUrl').value;
+            let id = u.split('v=')[1] || u.split('/').pop();
+            document.getElementById('ytIframe').src = "https://www.youtube.com/embed/" + id;
         }
     </script>
 </body>
